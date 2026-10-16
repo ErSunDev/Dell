@@ -17,10 +17,7 @@
     color:#e8f2ea; user-select:none;
   }
   canvas{display:block;}
-
   #ui{position:fixed;inset:0;pointer-events:none;z-index:10;}
-
-  /* vignette + grain */
   #vignette{
     position:fixed;inset:0;pointer-events:none;z-index:9;
     background:radial-gradient(ellipse at center, rgba(0,0,0,0) 42%, rgba(0,0,0,0.55) 100%);
@@ -31,7 +28,6 @@
     background:radial-gradient(ellipse at center, rgba(255,0,0,0) 35%, rgba(180,10,0,0.75) 100%);
     opacity:0;transition:opacity .18s ease-out;
   }
-
   .panel{
     position:absolute;
     background:linear-gradient(180deg, rgba(8,14,12,.62), rgba(8,14,12,.34));
@@ -41,8 +37,6 @@
     padding:10px 14px;
     box-shadow:0 6px 26px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
   }
-
-  /* ---- Objective ---- */
   #objective{
     top:22px;left:22px;min-width:250px;
     font-size:11px;letter-spacing:.22em;text-transform:uppercase;
@@ -51,8 +45,6 @@
   #objective .main{color:var(--accent);font-size:14px;letter-spacing:.16em;font-weight:600;
     text-shadow:0 0 14px rgba(142,240,168,.55);}
   #objective .sub{color:#9db4a6;margin-top:7px;font-size:10px;letter-spacing:.14em;}
-
-  /* ---- Detection ---- */
   #detectWrap{
     top:22px;left:50%;transform:translateX(-50%);
     width:300px;padding:9px 14px 11px;
@@ -66,7 +58,30 @@
   #detectFill{height:100%;width:0%;background:var(--warn);border-radius:3px;
     transition:width .06s linear, background .2s;box-shadow:0 0 12px currentColor;}
 
-  /* ---- Status ---- */
+  /* ---- Compass ---- */
+  #compass{
+    position:absolute;
+    top:84px;left:50%;transform:translateX(-50%);
+    width:44px;height:44px;border-radius:50%;
+    background:rgba(8,14,12,.62);
+    border:1px solid rgba(142,240,168,.28);
+    backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;
+    opacity:0;transition:opacity .3s;
+    box-shadow:0 4px 16px rgba(0,0,0,.5);
+  }
+  #compass.on{opacity:1;}
+  #compassArrow{
+    width:0;height:0;
+    border-left:6px solid transparent;
+    border-right:6px solid transparent;
+    border-bottom:15px solid #ff5a4a;
+    filter: drop-shadow(0 0 6px rgba(255,90,74,.9));
+    transform-origin: 50% 65%;
+    transform: rotate(0rad);
+    transition: transform .08s linear;
+  }
+
   #status{bottom:24px;left:22px;width:250px;}
   .statRow{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
   .statRow:last-child{margin-bottom:0;}
@@ -75,8 +90,6 @@
   .barFill{height:100%;width:100%;border-radius:4px;transition:width .12s linear;}
   #hpFill{background:linear-gradient(90deg,#ff4a3a,#ff8a6a);box-shadow:0 0 12px rgba(255,74,58,.6);}
   #stFill{background:linear-gradient(90deg,#7ad4ff,#bff0ff);box-shadow:0 0 12px rgba(122,212,255,.55);}
-
-  /* ---- Hidden tag ---- */
   #hiddenTag{
     bottom:120px;left:22px;
     font-size:11px;letter-spacing:.28em;text-transform:uppercase;
@@ -84,15 +97,11 @@
     opacity:0;transition:opacity .2s;
   }
   #hiddenTag.on{opacity:1;}
-
-  /* ---- Controls ---- */
   #controls{
     bottom:24px;right:22px;font-size:10px;letter-spacing:.14em;
     color:#93a89b;line-height:1.85;text-align:right;text-transform:uppercase;
   }
   #controls b{color:#d8ecdc;font-weight:600;}
-
-  /* ---- Overlay ---- */
   #overlay{
     position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;
     align-items:center;justify-content:center;text-align:center;
@@ -151,6 +160,10 @@
     <div id="detectBar"><div id="detectFill"></div></div>
   </div>
 
+  <div id="compass">
+    <div id="compassArrow"></div>
+  </div>
+
   <div id="status" class="panel">
     <div class="statRow"><span class="statLabel">Health</span><div class="bar"><div class="barFill" id="hpFill"></div></div></div>
     <div class="statRow"><span class="statLabel">Stam</span><div class="bar"><div class="barFill" id="stFill"></div></div></div>
@@ -173,9 +186,9 @@
   <div id="title">DULESIM</div>
   <div id="subtitle">A Stealth Escape</div>
   <div id="tagline">
-    You are <em>DULESIM</em> — a cow with one chance.<br>
-    A hunter stalks the pasture. Hide in the brush, stay low,<br>
-    and reach the <em>green gate</em> before he finds you.
+    You are <em>DULESIM</em> — a cow who strayed from the herd.<br>
+    A bear hunts these woods. He is no enemy — only a hunter<br>
+    who knows every trail. Hide, stay low, and reach the <em>green gate</em>.
   </div>
   <button id="startBtn">Begin Escape</button>
 </div>
@@ -292,13 +305,13 @@ const sunOffset = new THREE.Vector3(60, 90, 45);
 /* =====================================================================
    WORLD CONSTANTS
    ===================================================================== */
-const WORLD = 50;              // half-extent of playable area
+const WORLD = 50;
 const SPAWN  = new THREE.Vector3(-40, 0, 40);
 const EXIT   = new THREE.Vector3( 40, 0, -40);
 
-const obstacles = [];          // {x,z,r} solid collision + sight blockers
-const bushes    = [];          // {x,z,r} concealment zones
-const occluders = [];          // tall sight blockers (subset)
+const obstacles = [];
+const bushes    = [];
+const occluders = [];
 
 /* =====================================================================
    GROUND
@@ -310,7 +323,6 @@ function makeGroundTexture(){
   const ctx = c.getContext('2d');
   ctx.fillStyle = '#3d5a2b';
   ctx.fillRect(0,0,S,S);
-
   for (let i=0;i<1100;i++){
     const x = Math.random()*S, y = Math.random()*S, r = 18 + Math.random()*130;
     const g = ctx.createRadialGradient(x,y,0,x,y,r);
@@ -334,16 +346,12 @@ function makeGroundTexture(){
   tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
   return tex;
 }
-
 {
   const groundTex = makeGroundTexture();
   const gGeo = new THREE.PlaneGeometry(520, 520, 1, 1);
   gGeo.rotateX(-Math.PI/2);
   const gMat = new THREE.MeshStandardMaterial({
-    map: groundTex,
-    color: 0xffffff,
-    roughness: 0.97,
-    metalness: 0.0
+    map: groundTex, color: 0xffffff, roughness: 0.97, metalness: 0.0
   });
   const ground = new THREE.Mesh(gGeo, gMat);
   ground.receiveShadow = true;
@@ -351,7 +359,7 @@ function makeGroundTexture(){
 }
 
 /* =====================================================================
-   GRASS (instanced, wind-animated)
+   GRASS
    ===================================================================== */
 let grassMatRef = null;
 function makeBladeTexture(){
@@ -379,13 +387,9 @@ function makeBladeTexture(){
   const bladeTex = makeBladeTexture();
   const geo = new THREE.PlaneGeometry(0.16, 0.85, 1, 3);
   geo.translate(0, 0.425, 0);
-
   const mat = new THREE.MeshStandardMaterial({
-    map: bladeTex,
-    alphaTest: 0.45,
-    side: THREE.DoubleSide,
-    roughness: 0.95,
-    metalness: 0.0
+    map: bladeTex, alphaTest: 0.45, side: THREE.DoubleSide,
+    roughness: 0.95, metalness: 0.0
   });
   mat.onBeforeCompile = (shader) => {
     shader.uniforms.uTime = { value: 0 };
@@ -402,11 +406,9 @@ function makeBladeTexture(){
     );
   };
   grassMatRef = mat;
-
   const COUNT = 13000;
   const mesh = new THREE.InstancedMesh(geo, mat, COUNT);
-  mesh.castShadow = false;
-  mesh.receiveShadow = false;
+  mesh.castShadow = false; mesh.receiveShadow = false;
   const dummy = new THREE.Object3D();
   const col = new THREE.Color();
   for (let i=0;i<COUNT;i++){
@@ -427,28 +429,23 @@ function makeBladeTexture(){
 }
 
 /* =====================================================================
-   TREES  (instanced trunk + foliage blobs)
+   TREES
    ===================================================================== */
 const treePositions = [];
 {
   const trunkGeo = new THREE.CylinderGeometry(0.22, 0.42, 5.0, 7);
   trunkGeo.translate(0, 2.5, 0);
   const trunkMat = new THREE.MeshStandardMaterial({ color:0x54402e, roughness:0.98, flatShading:true });
-
   const blobGeo = new THREE.IcosahedronGeometry(1, 1);
   const blobMat = new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.92, flatShading:true });
-
   const TREES = 86;
   const trunks   = new THREE.InstancedMesh(trunkGeo, trunkMat, TREES);
   const blobs    = new THREE.InstancedMesh(blobGeo,  blobMat,  TREES*3);
   trunks.castShadow = true; trunks.receiveShadow = true;
   blobs.castShadow = true;  blobs.receiveShadow = true;
-
   const dummy = new THREE.Object3D();
   const col   = new THREE.Color();
-
-  let placed = 0;
-  let guard = 0;
+  let placed = 0, guard = 0;
   while (placed < TREES && guard < 4000){
     guard++;
     const x = rr(-WORLD+3, WORLD-3);
@@ -461,26 +458,21 @@ const treePositions = [];
     }
     if (!ok) continue;
     treePositions.push({ x, z });
-
     const scale = rr(0.8, 1.5);
     const rot   = rnd()*Math.PI*2;
     const lean  = rr(-0.05, 0.05);
-
     dummy.position.set(x, 0, z);
     dummy.rotation.set(lean, rot, lean*0.6);
     dummy.scale.set(scale, scale, scale);
     dummy.updateMatrix();
     trunks.setMatrixAt(placed, dummy.matrix);
-
     const baseHue = 0.24 + rnd()*0.07;
     for (let b=0;b<3;b++){
       const idx = placed*3 + b;
       const by = (3.5 + b*1.15) * scale;
       const bs = (b === 0 ? 1.55 : b === 1 ? 1.25 : 0.9) * scale * rr(0.9, 1.15);
       dummy.position.set(
-        x + rr(-0.4,0.4)*scale,
-        by,
-        z + rr(-0.4,0.4)*scale
+        x + rr(-0.4,0.4)*scale, by, z + rr(-0.4,0.4)*scale
       );
       dummy.rotation.set(rnd()*Math.PI, rnd()*Math.PI, rnd()*Math.PI);
       dummy.scale.set(bs, bs*0.82, bs);
@@ -489,7 +481,6 @@ const treePositions = [];
       col.setHSL(baseHue, 0.40 + rnd()*0.22, 0.14 + b*0.045 + rnd()*0.05);
       blobs.setColorAt(idx, col);
     }
-
     obstacles.push({ x, z, r: 0.85 * scale, tall: true });
     occluders.push({ x, z, r: 0.85 * scale });
     placed++;
@@ -544,7 +535,7 @@ const treePositions = [];
 }
 
 /* =====================================================================
-   BUSHES (concealment)
+   BUSHES
    ===================================================================== */
 {
   const geo = new THREE.IcosahedronGeometry(1, 1);
@@ -581,7 +572,7 @@ const treePositions = [];
 }
 
 /* =====================================================================
-   FENCE RING
+   FENCE
    ===================================================================== */
 {
   const postGeo = new THREE.BoxGeometry(0.22, 1.5, 0.22);
@@ -604,40 +595,30 @@ const treePositions = [];
   });
   mesh.instanceMatrix.needsUpdate = true;
   scene.add(mesh);
-
-  // rails
   const railMat = new THREE.MeshStandardMaterial({ color:0x5c4630, roughness:0.95 });
   const railGeo = new THREE.BoxGeometry(WORLD*2, 0.12, 0.08);
   for (const y of [0.55, 1.0]){
-    const a = new THREE.Mesh(railGeo, railMat);
-    a.position.set(0, y, -WORLD); scene.add(a);
-    const b = new THREE.Mesh(railGeo, railMat);
-    b.position.set(0, y,  WORLD); scene.add(b);
+    const a = new THREE.Mesh(railGeo, railMat); a.position.set(0, y, -WORLD); scene.add(a);
+    const b = new THREE.Mesh(railGeo, railMat); b.position.set(0, y,  WORLD); scene.add(b);
   }
   const railGeoZ = new THREE.BoxGeometry(0.08, 0.12, WORLD*2);
   for (const y of [0.55, 1.0]){
-    const a = new THREE.Mesh(railGeoZ, railMat);
-    a.position.set(-WORLD, y, 0); scene.add(a);
-    const b = new THREE.Mesh(railGeoZ, railMat);
-    b.position.set( WORLD, y, 0); scene.add(b);
+    const a = new THREE.Mesh(railGeoZ, railMat); a.position.set(-WORLD, y, 0); scene.add(a);
+    const b = new THREE.Mesh(railGeoZ, railMat); b.position.set( WORLD, y, 0); scene.add(b);
   }
 }
 
 /* =====================================================================
-   BARN + HAY BALES + CRATES
+   BARN + PROPS
    ===================================================================== */
 {
   const woodMat  = new THREE.MeshStandardMaterial({ color:0x7a3f2c, roughness:0.92 });
-  const woodDark = new THREE.MeshStandardMaterial({ color:0x5a2d1f, roughness:0.95 });
   const roofMat  = new THREE.MeshStandardMaterial({ color:0x3a2a22, roughness:0.85 });
-
   const barn = new THREE.Group();
   barn.position.set(16, 0, 14);
   barn.rotation.y = -0.5;
   scene.add(barn);
-
   const W = 13, D = 9, H = 5.2, T = 0.5;
-
   function wall(w,h,d,x,y,z){
     const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), woodMat);
     m.position.set(x,y,z);
@@ -645,20 +626,14 @@ const treePositions = [];
     barn.add(m);
     return m;
   }
-  // back wall
   wall(W, H, T, 0, H/2, -D/2);
-  // side walls
   wall(T, H, D, -W/2, H/2, 0);
   wall(T, H, D,  W/2, H/2, 0);
-  // front wall with doorway gap
   const gap = 3.4;
   const segW = (W - gap)/2;
   wall(segW, H, T, -(gap/2 + segW/2), H/2, D/2);
   wall(segW, H, T,  (gap/2 + segW/2), H/2, D/2);
-  // lintel above door
   wall(gap, H-3.2, T, 0, 3.2 + (H-3.2)/2, D/2);
-
-  // roof (two slabs)
   const roofL = new THREE.Mesh(new THREE.BoxGeometry(W+1.2, 0.35, D*0.62), roofMat);
   roofL.position.set(0, H + 0.85, -D*0.24);
   roofL.rotation.x = -0.44;
@@ -668,8 +643,6 @@ const treePositions = [];
   roofR.position.set(0, H + 0.85, D*0.24);
   roofR.rotation.x = 0.44;
   barn.add(roofR);
-
-  // register barn collisions (in world space)
   const barnWalls = [
     [0, -D/2, W/2, T/2],
     [-W/2, 0, T/2, D/2],
@@ -679,7 +652,6 @@ const treePositions = [];
   ];
   const cos = Math.cos(barn.rotation.y), sin = Math.sin(barn.rotation.y);
   for (const [lx, lz, hw, hd] of barnWalls){
-    // approximate rotated AABB with a few circles
     const steps = Math.max(2, Math.ceil(Math.max(hw, hd) * 2 / 0.9));
     for (let s=0; s<=steps; s++){
       const t = steps === 0 ? 0 : (s/steps)*2 - 1;
@@ -692,8 +664,6 @@ const treePositions = [];
       obstacles.push({ x: wx, z: wz, r, tall: true });
     }
   }
-
-  // hay bales
   const hayMat = new THREE.MeshStandardMaterial({ color:0xc9a94f, roughness:1.0, flatShading:true });
   const hayGeo = new THREE.CylinderGeometry(1.05, 1.05, 1.8, 14);
   hayGeo.rotateZ(Math.PI/2);
@@ -708,8 +678,6 @@ const treePositions = [];
     scene.add(m);
     obstacles.push({ x: hx, z: hz, r: 1.3, tall: false });
   }
-
-  // crates
   const crateMat = new THREE.MeshStandardMaterial({ color:0x8a6a42, roughness:0.9, flatShading:true });
   const crateGeo = new THREE.BoxGeometry(1.5, 1.5, 1.5);
   for (let i=0;i<10;i++){
@@ -726,8 +694,6 @@ const treePositions = [];
     scene.add(m);
     obstacles.push({ x: cx, z: cz, r: 1.15*s, tall: false });
   }
-
-  // scattered dead logs for cover
   const logMat = new THREE.MeshStandardMaterial({ color:0x4c3a2a, roughness:0.98, flatShading:true });
   const logGeo = new THREE.CylinderGeometry(0.42, 0.5, 5.5, 9);
   logGeo.rotateZ(Math.PI/2);
@@ -753,7 +719,6 @@ let exitGlow, exitBeam;
   const g = new THREE.Group();
   g.position.copy(EXIT);
   scene.add(g);
-
   const stoneMat = new THREE.MeshStandardMaterial({ color:0x8f8f88, roughness:0.9, flatShading:true });
   const pillarGeo = new THREE.BoxGeometry(1.3, 6, 1.3);
   for (const sx of [-2.9, 2.9]){
@@ -766,8 +731,6 @@ let exitGlow, exitBeam;
   lintel.position.set(0, 6.5, 0);
   lintel.castShadow = true; lintel.receiveShadow = true;
   g.add(lintel);
-
-  // glowing portal
   const portalMat = new THREE.MeshBasicMaterial({
     color: 0x7dffb0, transparent: true, opacity: 0.22,
     side: THREE.DoubleSide, depthWrite: false
@@ -776,8 +739,6 @@ let exitGlow, exitBeam;
   portal.position.set(0, 3.0, 0);
   g.add(portal);
   exitGlow = portal;
-
-  // vertical beam
   const beamMat = new THREE.MeshBasicMaterial({
     color: 0x8effc0, transparent: true, opacity: 0.10,
     depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
@@ -786,23 +747,19 @@ let exitGlow, exitBeam;
   beam.position.set(0, 45, 0);
   g.add(beam);
   exitBeam = beam;
-
   const pl = new THREE.PointLight(0x8effc0, 14, 26, 2.0);
   pl.position.set(0, 3.4, 0);
   g.add(pl);
-
-  // frame collisions
   obstacles.push({ x: EXIT.x - 2.9, z: EXIT.z, r: 1.0, tall: true });
   obstacles.push({ x: EXIT.x + 2.9, z: EXIT.z, r: 1.0, tall: true });
 }
 
 /* =====================================================================
-   COW (player model)
+   COW
    ===================================================================== */
 const LEG_LEN = 1.0;
 function createCow(){
   const root = new THREE.Group();
-
   const hideMat = new THREE.MeshStandardMaterial({ color:0xf4f1e6, roughness:0.72, metalness:0.02 });
   const spotMat = new THREE.MeshStandardMaterial({ color:0x231e1b, roughness:0.8 });
   const pinkMat = new THREE.MeshStandardMaterial({ color:0xe79aa4, roughness:0.6 });
@@ -812,7 +769,6 @@ function createCow(){
   const body = new THREE.Group();
   root.add(body);
 
-  // torso
   const torsoGeo = new THREE.CapsuleGeometry(0.58, 1.20, 8, 18);
   torsoGeo.rotateX(Math.PI/2);
   const torso = new THREE.Mesh(torsoGeo, hideMat);
@@ -820,7 +776,6 @@ function createCow(){
   torso.castShadow = true; torso.receiveShadow = true;
   body.add(torso);
 
-  // spots (flattened patches)
   const spotGeo = new THREE.SphereGeometry(0.32, 12, 10);
   const spots = [
     [ 0.50, 0.28,  0.35, 1.0, 0.22, 1.2, 0.0, 0.0, -0.5],
@@ -838,21 +793,18 @@ function createCow(){
     body.add(m);
   }
 
-  // udder
   const udder = new THREE.Mesh(new THREE.SphereGeometry(0.26, 14, 10), pinkMat);
   udder.position.set(0, -0.48, -0.35);
   udder.scale.set(1, 0.8, 1.3);
   udder.castShadow = true;
   body.add(udder);
 
-  // neck
   const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.34, 0.6, 12), hideMat);
   neck.position.set(0, 0.30, 1.02);
   neck.rotation.x = -0.55;
   neck.castShadow = true;
   body.add(neck);
 
-  // head
   const head = new THREE.Group();
   head.position.set(0, 0.52, 1.36);
   body.add(head);
@@ -893,23 +845,16 @@ function createCow(){
     head.add(horn);
   }
 
-  // ============================================================
-  // LEGS — thicker, tapered two-segment design with hoof cap
-  // and haunch joint so the leg blends into the belly.
-  // ============================================================
+  // LEGS — two-segment tapered with haunch and hoof cap
   const legs = [];
   const legDefs = [
-    // front pair  // back pair
     [-0.40,  0.70], [ 0.40,  0.70],
     [-0.44, -0.75], [ 0.44, -0.75],
   ];
-
   const upperLegGeo = new THREE.CylinderGeometry(0.175, 0.13, 0.50, 8);
   upperLegGeo.translate(0, -0.25, 0);
-
   const lowerLegGeo = new THREE.CylinderGeometry(0.095, 0.085, 0.50, 8);
   lowerLegGeo.translate(0, -0.75, 0);
-
   const hoofCapGeo = new THREE.CylinderGeometry(0.115, 0.12, 0.12, 8);
   hoofCapGeo.translate(0, -0.94, 0);
 
@@ -918,36 +863,27 @@ function createCow(){
     g.position.set(lx, LEG_LEN, lz);
     root.add(g);
 
-    // Haunch / shoulder joint — blends the leg into the belly
     const haunch = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 10), hideMat);
     haunch.position.y = 0.02;
     haunch.scale.set(1.05, 0.75, 1.05);
-    haunch.castShadow = true;
-    haunch.receiveShadow = true;
+    haunch.castShadow = true; haunch.receiveShadow = true;
     g.add(haunch);
 
-    // Upper leg (thigh) — thicker at the hip, tapering down
     const upper = new THREE.Mesh(upperLegGeo, hideMat);
-    upper.castShadow = true;
-    upper.receiveShadow = true;
+    upper.castShadow = true; upper.receiveShadow = true;
     g.add(upper);
 
-    // Lower leg (shin) — slimmer
     const lower = new THREE.Mesh(lowerLegGeo, hideMat);
-    lower.castShadow = true;
-    lower.receiveShadow = true;
+    lower.castShadow = true; lower.receiveShadow = true;
     g.add(lower);
 
-    // Hoof — dark cap at the very bottom
     const hoof = new THREE.Mesh(hoofCapGeo, hoofMat);
-    hoof.castShadow = true;
-    hoof.receiveShadow = true;
+    hoof.castShadow = true; hoof.receiveShadow = true;
     g.add(hoof);
 
     legs.push(g);
   }
 
-  // tail
   const tail = new THREE.Group();
   tail.position.set(0, 0.32, -1.18);
   body.add(tail);
@@ -962,41 +898,31 @@ function createCow(){
   root.scale.setScalar(0.86);
 
   let walkPhase = 0;
-
   return {
     group: root,
     update(dt, speed, crouchT, t){
       const hipY = THREE.MathUtils.lerp(1.0, 0.54, crouchT);
       body.position.y = hipY + 0.46;
-
       for (const g of legs){
         g.position.y = hipY;
         g.scale.y = Math.max(0.12, hipY / LEG_LEN);
       }
-
       const moveAmt = clamp(speed / 8.0, 0, 1);
       walkPhase += dt * (2.4 + speed * 1.85);
       const amp = moveAmt * 0.60;
       const swing = Math.sin(walkPhase);
-
       legs[0].rotation.x =  swing * amp;
       legs[3].rotation.x =  swing * amp;
       legs[1].rotation.x = -swing * amp;
       legs[2].rotation.x = -swing * amp;
-
-      // subtle body bob + sway
       body.position.y += Math.abs(Math.sin(walkPhase)) * 0.045 * moveAmt;
       body.rotation.z = Math.sin(walkPhase) * 0.035 * moveAmt;
       body.rotation.x = -moveAmt * 0.045;
-
-      // head bob & idle grazing
       const idle = (1 - moveAmt);
       head.rotation.x = Math.sin(walkPhase * 2) * 0.05 * moveAmt
                       + Math.sin(t * 0.9) * 0.05 * idle
                       + crouchT * 0.18;
       head.rotation.z = Math.sin(walkPhase) * 0.06 * moveAmt;
-
-      // tail sway
       tail.rotation.z = Math.sin(t * 2.6) * 0.28 + Math.sin(walkPhase) * 0.12;
       tail.rotation.x = Math.sin(t * 1.7) * 0.12;
     }
@@ -1008,7 +934,6 @@ function createCow(){
    ===================================================================== */
 function createBear(){
   const root = new THREE.Group();
-
   const furMat  = new THREE.MeshStandardMaterial({ color:0x4a3423, roughness:0.96 });
   const furLite = new THREE.MeshStandardMaterial({ color:0x6d4e36, roughness:0.95 });
   const darkMat = new THREE.MeshStandardMaterial({ color:0x1c1510, roughness:0.85 });
@@ -1016,7 +941,6 @@ function createBear(){
   const woodMat = new THREE.MeshStandardMaterial({ color:0x5c3d24, roughness:0.85 });
   const eyeMat  = new THREE.MeshStandardMaterial({ color:0xffcc44, emissive:0xff7a00, emissiveIntensity:2.4 });
 
-  // torso
   const torsoGeo = new THREE.CapsuleGeometry(0.50, 0.72, 8, 16);
   const torso = new THREE.Mesh(torsoGeo, furMat);
   torso.position.y = 1.60;
@@ -1024,14 +948,12 @@ function createBear(){
   torso.castShadow = true; torso.receiveShadow = true;
   root.add(torso);
 
-  // chest fur
   const chest = new THREE.Mesh(new THREE.SphereGeometry(0.34, 16, 12), furLite);
   chest.position.set(0, 1.55, 0.30);
   chest.scale.set(1.05, 1.15, 0.7);
   chest.castShadow = true;
   root.add(chest);
 
-  // shoulder mass
   for (const s of [-1, 1]){
     const sh = new THREE.Mesh(new THREE.SphereGeometry(0.26, 12, 10), furMat);
     sh.position.set(0.44*s, 1.94, 0);
@@ -1039,38 +961,31 @@ function createBear(){
     root.add(sh);
   }
 
-  // head
   const head = new THREE.Group();
   head.position.set(0, 2.22, 0.06);
   root.add(head);
-
   const skull = new THREE.Mesh(new THREE.SphereGeometry(0.39, 18, 14), furMat);
   skull.scale.set(1.0, 0.94, 1.06);
   skull.castShadow = true;
   head.add(skull);
-
   const snout = new THREE.Mesh(new THREE.BoxGeometry(0.33, 0.27, 0.42), furLite);
   snout.position.set(0, -0.10, 0.40);
   snout.castShadow = true;
   head.add(snout);
-
   const nose = new THREE.Mesh(new THREE.SphereGeometry(0.11, 12, 10), darkMat);
   nose.position.set(0, -0.06, 0.60);
   nose.scale.set(1.3, 0.9, 0.8);
   head.add(nose);
-
   for (const s of [-1, 1]){
     const ear = new THREE.Mesh(new THREE.SphereGeometry(0.145, 12, 10), furMat);
     ear.position.set(0.30*s, 0.33, -0.02);
     ear.castShadow = true;
     head.add(ear);
-
     const eye = new THREE.Mesh(new THREE.SphereGeometry(0.062, 12, 10), eyeMat);
     eye.position.set(0.155*s, 0.06, 0.33);
     head.add(eye);
   }
 
-  // ---- arms + gun ----
   const rightArm = new THREE.Group();
   rightArm.position.set(0.46, 1.90, 0.06);
   root.add(rightArm);
@@ -1097,28 +1012,23 @@ function createBear(){
   lFore.castShadow = true;
   leftArm.add(lFore);
 
-  // gun
   const gun = new THREE.Group();
   gun.position.set(0.10, 1.28, 0.56);
   gun.rotation.x = -0.06;
   root.add(gun);
-
   const stock = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.16, 0.62), woodMat);
   stock.position.set(0, 0, -0.24);
   stock.castShadow = true;
   gun.add(stock);
-
   const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.15, 0.44), metalMat);
   receiver.position.set(0, 0.02, 0.16);
   receiver.castShadow = true;
   gun.add(receiver);
-
   const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.038, 0.86, 10), metalMat);
   barrel.rotation.x = Math.PI/2;
   barrel.position.set(0, 0.03, 0.78);
   barrel.castShadow = true;
   gun.add(barrel);
-
   const scope = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.30, 10), metalMat);
   scope.rotation.x = Math.PI/2;
   scope.position.set(0, 0.14, 0.18);
@@ -1135,12 +1045,10 @@ function createBear(){
   );
   flash.position.copy(muzzle.position);
   gun.add(flash);
-
   const flashLight = new THREE.PointLight(0xffb347, 0, 16, 2.0);
   flashLight.position.copy(muzzle.position);
   gun.add(flashLight);
 
-  // ---- legs ----
   const legGeo = new THREE.CapsuleGeometry(0.185, 0.62, 6, 10);
   const footGeo = new THREE.BoxGeometry(0.32, 0.16, 0.52);
   const legs = [];
@@ -1160,29 +1068,21 @@ function createBear(){
   }
 
   let walkPhase = 0;
-
   return {
     group: root,
-    muzzle,
-    flash,
-    flashLight,
+    muzzle, flash, flashLight,
     update(dt, speed, t){
       walkPhase += dt * (2.0 + speed * 1.9);
       const amp = clamp(speed/5.2, 0, 1) * 0.62;
       const sw = Math.sin(walkPhase);
       legs[0].rotation.x =  sw * amp;
       legs[1].rotation.x = -sw * amp;
-
       rightArm.rotation.x = -sw * amp * 0.45 - 0.35;
       leftArm.rotation.x  =  sw * amp * 0.45 - 0.35;
-
       torso.position.y = 1.60 + Math.abs(Math.sin(walkPhase)) * 0.05 * (amp*1.6);
       torso.rotation.z = Math.sin(walkPhase) * 0.045 * (amp*1.6);
-
       head.rotation.x = Math.sin(walkPhase*2) * 0.05 * (amp*1.6);
       head.rotation.y = Math.sin(t * 0.7) * 0.12 * (1 - amp*1.6);
-
-      // fade muzzle flash
       if (flash.material.opacity > 0){
         flash.material.opacity = Math.max(0, flash.material.opacity - dt * 9);
         flashLight.intensity = Math.max(0, flashLight.intensity - dt * 90);
@@ -1216,32 +1116,36 @@ scene.add(cow.group);
    HUNTER STATE
    ===================================================================== */
 const hunter = createBear();
-hunter.group.position.set(0, 0, 0);
 scene.add(hunter.group);
 
+// Waypoints now spread across the WHOLE map so the bear crosses
+// the player's route. The bear also starts near the player spawn.
 const hunterData = {
   state: 'patrol',
   detect: 0,
   lastSeen: -99,
   lastKnown: new THREE.Vector3(),
   waypoints: [
-    new THREE.Vector3(  0, 0,   0),
-    new THREE.Vector3( 22, 0, -14),
-    new THREE.Vector3( 30, 0,  18),
-    new THREE.Vector3(  0, 0,  30),
-    new THREE.Vector3(-24, 0,  16),
-    new THREE.Vector3(-30, 0, -18),
-    new THREE.Vector3( -6, 0, -30),
-    new THREE.Vector3( 20, 0, -30),
+    new THREE.Vector3(-35, 0,  35),   // near player spawn
+    new THREE.Vector3(  0, 0,  35),   // across the top
+    new THREE.Vector3( 35, 0,  35),   // top-right
+    new THREE.Vector3( 35, 0,   0),   // right
+    new THREE.Vector3( 35, 0, -35),   // bottom-right (near exit)
+    new THREE.Vector3(  0, 0, -35),   // across the bottom
+    new THREE.Vector3(-35, 0, -35),   // bottom-left
+    new THREE.Vector3(-35, 0,   0),   // left
+    new THREE.Vector3(-35, 0,  35),   // back to start
+    new THREE.Vector3(  0, 0,   0),   // cut through center
   ],
   wpIndex: 0,
   searchTimer: 0,
   shootCooldown: 0,
-  viewRange: 34,
-  fov: 78,
+  viewRange: 40,       // a bit more reach
+  fov: 82,
   speed: 2.3
 };
-hunter.group.position.copy(hunterData.waypoints[0]);
+hunter.group.position.set(-35, 0, 35);
+hunter.group.rotation.y = 0;
 
 /* =====================================================================
    PROJECTILES
@@ -1282,8 +1186,26 @@ function segmentCircle(ax, az, bx, bz, cx, cz, r){
   return false;
 }
 
+// 3D segment vs sphere — used for bullet tunneling fix
+function segmentSphere(p0, p1, center, radius){
+  const dx = p1.x - p0.x, dy = p1.y - p0.y, dz = p1.z - p0.z;
+  const fx = p0.x - center.x, fy = p0.y - center.y, fz = p0.z - center.z;
+  const a = dx*dx + dy*dy + dz*dz;
+  if (a < 1e-8) return false;
+  const b = 2*(fx*dx + fy*dy + fz*dz);
+  const c = fx*fx + fy*fy + fz*fz - radius*radius;
+  let disc = b*b - 4*a*c;
+  if (disc < 0) return false;
+  disc = Math.sqrt(disc);
+  const t1 = (-b - disc) / (2*a);
+  const t2 = (-b + disc) / (2*a);
+  if (t1 >= 0 && t1 <= 1) return true;
+  if (t2 >= 0 && t2 <= 1) return true;
+  if (t1 < 0 && t2 > 1) return true;
+  return false;
+}
+
 function hasLOS(ax, az, bx, bz){
-  // bounding box reject
   const minX = Math.min(ax,bx) - 2, maxX = Math.max(ax,bx) + 2;
   const minZ = Math.min(az,bz) - 2, maxZ = Math.max(az,bz) + 2;
   for (let i=0;i<occluders.length;i++){
@@ -1376,7 +1298,9 @@ const ui = {
   objMain: document.getElementById('objMain'),
   overlay: document.getElementById('overlay'),
   damage: document.getElementById('damage'),
-  hint: document.getElementById('hint')
+  hint: document.getElementById('hint'),
+  compass: document.getElementById('compass'),
+  compassArrow: document.getElementById('compassArrow')
 };
 
 function flashDamage(){
@@ -1390,17 +1314,16 @@ function endGame(won){
   ui.overlay.classList.remove('hidden');
   ui.overlay.innerHTML = won
     ? `<div id="resultTitle" class="win">ESCAPED</div>
-       <div id="resultSub">Dulesim made it through the gate</div>
+       <div id="resultSub">The hunter lost the trail</div>
        <button id="startBtn">Run Again</button>`
     : `<div id="resultTitle" class="lose">CAUGHT</div>
-       <div id="resultSub">The hunter found his prize</div>
+       <div id="resultSub">The hunt is over</div>
        <button id="startBtn">Try Again</button>`;
   document.getElementById('startBtn').addEventListener('click', restart);
 }
 
 function restart(){
   ui.overlay.classList.add('hidden');
-  // reset player
   player.pos.copy(SPAWN);
   player.yaw = Math.PI;
   player.crouchT = 0;
@@ -1411,16 +1334,14 @@ function restart(){
   cow.group.position.copy(player.pos);
   cow.group.rotation.y = player.yaw;
 
-  // reset hunter
   hunterData.state = 'patrol';
   hunterData.detect = 0;
   hunterData.wpIndex = 0;
   hunterData.searchTimer = 0;
   hunterData.shootCooldown = 0;
-  hunter.group.position.copy(hunterData.waypoints[0]);
+  hunter.group.position.set(-35, 0, 35);
   hunter.group.rotation.y = 0;
 
-  // clear bullets
   for (const p of projectiles) scene.remove(p.mesh);
   projectiles.length = 0;
 
@@ -1437,17 +1358,13 @@ document.getElementById('startBtn').addEventListener('click', restart);
 /* =====================================================================
    PLAYER UPDATE
    ===================================================================== */
-const tmpV = new THREE.Vector3();
-
 function updatePlayer(dt, t){
   if (!player.alive) return;
 
-  /* ---- crouch ---- */
   const wantCrouch = !!(keys['ControlLeft'] || keys['ControlRight'] || keys['KeyC']);
   player.crouching = wantCrouch;
   player.crouchT = THREE.MathUtils.damp(player.crouchT, wantCrouch ? 1 : 0, 9, dt);
 
-  /* ---- movement input ---- */
   const fwd = new THREE.Vector3(-Math.sin(cam.yaw), 0, -Math.cos(cam.yaw));
   const right = new THREE.Vector3(Math.cos(cam.yaw), 0, -Math.sin(cam.yaw));
 
@@ -1463,7 +1380,6 @@ function updatePlayer(dt, t){
   const moving = move.lengthSq() > 0.0001;
   if (moving) move.normalize();
 
-  /* ---- speed / stamina ---- */
   const wantSprint = (keys['ShiftLeft'] || keys['ShiftRight']) && f > 0 && !wantCrouch && player.stamina > 0.5;
   let speed = wantCrouch ? 2.35 : 4.7;
   if (wantSprint) speed = 8.4;
@@ -1474,28 +1390,23 @@ function updatePlayer(dt, t){
     player.stamina = Math.min(100, player.stamina + (wantCrouch ? 12 : 16) * dt);
   }
 
-  /* ---- move ---- */
   if (moving){
     player.pos.addScaledVector(move, speed * dt);
     resolveCollisions(player.pos, 0.85);
-
     const targetYaw = Math.atan2(move.x, move.z);
     player.yaw = angleLerp(player.yaw, targetYaw, 1 - Math.pow(0.0008, dt));
   }
 
-  /* ---- bush concealment check ---- */
   player.inBush = false;
   for (const b of bushes){
     const dx = player.pos.x - b.x, dz = player.pos.z - b.z;
     if (dx*dx + dz*dz < b.r*b.r){ player.inBush = true; break; }
   }
 
-  /* ---- apply to model ---- */
   cow.group.position.copy(player.pos);
   cow.group.rotation.y = player.yaw;
   cow.update(dt, moving ? speed : 0, player.crouchT, t);
 
-  /* ---- win check ---- */
   if (Math.hypot(player.pos.x - EXIT.x, player.pos.z - EXIT.z) < 4.0){
     endGame(true);
   }
@@ -1510,10 +1421,9 @@ function updateHunter(dt, t){
   const hz = hunter.group.position.z;
   const px = player.pos.x;
   const pz = player.pos.z;
-
   const dist = Math.hypot(px - hx, pz - hz);
 
-  /* ---------- vision ---------- */
+  /* ---- vision ---- */
   let sees = false;
   if (player.alive && dist < h.viewRange){
     const facing = new THREE.Vector3(Math.sin(hunter.group.rotation.y), 0, Math.cos(hunter.group.rotation.y));
@@ -1528,13 +1438,12 @@ function updateHunter(dt, t){
     }
   }
 
-  /* ---------- detection meter ---------- */
+  /* ---- detection meter ---- */
   if (sees){
     let mult = 1.0;
     if (player.inBush) mult *= (player.crouchT > 0.5 ? 0.13 : 0.48);
     else if (player.crouchT > 0.5) mult *= 0.58;
     mult *= clamp(1.55 - dist / h.viewRange, 0.18, 1.0);
-
     h.detect = Math.min(1, h.detect + 1.45 * mult * dt);
     h.lastSeen = t;
     h.lastKnown.set(px, 0, pz);
@@ -1542,11 +1451,9 @@ function updateHunter(dt, t){
     h.detect = Math.max(0, h.detect - 0.55 * dt);
   }
 
-  /* ---------- state machine ---------- */
+  /* ---- state machine ---- */
   if (h.detect >= 1){
-    if (h.state !== 'chase'){
-      h.state = 'chase';
-    }
+    if (h.state !== 'chase') h.state = 'chase';
   } else if (h.state === 'chase'){
     if (t - h.lastSeen > 5.0){
       h.state = 'search';
@@ -1558,7 +1465,7 @@ function updateHunter(dt, t){
     if (h.searchTimer <= 0) h.state = 'patrol';
   }
 
-  /* ---------- behaviour ---------- */
+  /* ---- behaviour ---- */
   let desired = new THREE.Vector3();
   let moveSpeed = 0;
   let faceTarget = null;
@@ -1570,9 +1477,8 @@ function updateHunter(dt, t){
       h.wpIndex = (h.wpIndex + 1) % h.waypoints.length;
     } else {
       desired.normalize();
-      moveSpeed = 2.2;
+      moveSpeed = 3.2;                       // <-- faster patrol
     }
-    // slow sweep during patrol
     if (!faceTarget) faceTarget = Math.atan2(desired.x, desired.z);
   }
   else if (h.state === 'chase'){
@@ -1586,10 +1492,8 @@ function updateHunter(dt, t){
       desired.set(0,0,0);
     }
     faceTarget = Math.atan2(px - hx, pz - hz);
-
-    /* shooting */
     h.shootCooldown -= dt;
-    if (sees && dist < 28 && h.shootCooldown <= 0){
+    if (sees && dist < 30 && h.shootCooldown <= 0){
       h.shootCooldown = rr(1.05, 1.5);
       shootAtPlayer();
     }
@@ -1598,7 +1502,6 @@ function updateHunter(dt, t){
     if (!h.target) h.target = h.lastKnown.clone();
     desired.set(h.target.x - hx, 0, h.target.z - hz);
     if (desired.length() < 2.0){
-      // wander to a nearby point
       const a = rnd()*Math.PI*2;
       const r = rr(6, 16);
       h.target.set(
@@ -1607,23 +1510,20 @@ function updateHunter(dt, t){
       );
     } else {
       desired.normalize();
-      moveSpeed = 3.1;
+      moveSpeed = 3.5;
     }
     faceTarget = Math.atan2(desired.x, desired.z);
   }
 
-  /* ---------- apply movement ---------- */
   const p = hunter.group.position;
   if (moveSpeed > 0 && desired.lengthSq() > 0){
     p.x += desired.x * moveSpeed * dt;
     p.z += desired.z * moveSpeed * dt;
     resolveCollisions(p, 1.05);
   }
-
   if (faceTarget !== null && faceTarget !== undefined && !isNaN(faceTarget)){
     hunter.group.rotation.y = angleLerp(hunter.group.rotation.y, faceTarget, 1 - Math.pow(0.0001, dt));
   }
-
   hunter.update(dt, moveSpeed, t);
 }
 
@@ -1633,48 +1533,43 @@ function updateHunter(dt, t){
 function shootAtPlayer(){
   const origin = new THREE.Vector3();
   hunter.muzzle.getWorldPosition(origin);
-
   const target = player.pos.clone();
   target.y = 1.05 - player.crouchT * 0.35;
-
   const dir = target.sub(origin).normalize();
-
-  // spread (worse at distance & while moving)
   const spread = 0.030;
   dir.x += rr(-spread, spread);
   dir.y += rr(-spread*0.7, spread*0.7);
   dir.z += rr(-spread, spread);
   dir.normalize();
-
   spawnBullet(origin, dir);
-
-  // muzzle flash
   hunter.flash.material.opacity = 1.0;
   hunter.flash.scale.setScalar(1.0);
   hunter.flashLight.intensity = 26;
 }
 
 /* =====================================================================
-   PROJECTILE UPDATE
+   PROJECTILE UPDATE — segment-sphere sweep to prevent tunneling
    ===================================================================== */
 function updateProjectiles(dt){
   for (let i = projectiles.length - 1; i >= 0; i--){
     const b = projectiles[i];
     b.life -= dt;
 
+    const oldPos = b.mesh.position.clone();
     const step = b.speed * dt;
     b.mesh.position.addScaledVector(b.dir, step);
+    const newPos = b.mesh.position;
 
     let dead = b.life <= 0;
 
-    // hit player
+    // hit player (segment test — cannot tunnel through)
     if (!dead && player.alive){
       const center = new THREE.Vector3(
         player.pos.x,
         1.0 - player.crouchT * 0.35,
         player.pos.z
       );
-      if (b.mesh.position.distanceTo(center) < 0.95){
+      if (segmentSphere(oldPos, newPos, center, 0.95)){
         damagePlayer(20);
         dead = true;
       }
@@ -1682,7 +1577,7 @@ function updateProjectiles(dt){
 
     // hit obstacle
     if (!dead){
-      const bx = b.mesh.position.x, bz = b.mesh.position.z;
+      const bx = newPos.x, bz = newPos.z;
       for (let j=0;j<obstacles.length;j++){
         const o = obstacles[j];
         const dx = bx - o.x, dz = bz - o.z;
@@ -1693,9 +1588,8 @@ function updateProjectiles(dt){
       }
     }
 
-    // hit ground
-    if (!dead && b.mesh.position.y < 0.05){
-      b.mesh.position.y = 0.05;
+    if (!dead && newPos.y < 0.05){
+      newPos.y = 0.05;
       dead = true;
     }
 
@@ -1724,26 +1618,21 @@ function damagePlayer(amount){
 function updateCamera(dt){
   const cp = Math.cos(cam.pitch);
   const sp = Math.sin(cam.pitch);
-
   const focus = new THREE.Vector3(
     player.pos.x,
     THREE.MathUtils.lerp(1.55, 1.05, player.crouchT),
     player.pos.z
   );
-
   const offset = new THREE.Vector3(
     Math.sin(cam.yaw) * cp,
     sp,
     Math.cos(cam.yaw) * cp
   ).multiplyScalar(cam.dist);
-
   const desiredPos = focus.clone().add(offset);
   desiredPos.y = Math.max(desiredPos.y, 0.9);
-
   const k = 1 - Math.pow(0.0016, dt);
   camPos.lerp(desiredPos, k);
   camTarget.lerp(focus, 1 - Math.pow(0.0005, dt));
-
   camera.position.copy(camPos);
   camera.lookAt(camTarget);
 }
@@ -1770,6 +1659,28 @@ function updateSun(){
 }
 
 /* =====================================================================
+   COMPASS — points toward the bear in screen-relative space
+   ===================================================================== */
+function updateCompass(){
+  const dx = hunter.group.position.x - player.pos.x;
+  const dz = hunter.group.position.z - player.pos.z;
+  const dist = Math.hypot(dx, dz);
+
+  // Project onto camera's forward/right
+  // Camera forward = (-sin(yaw), 0, -cos(yaw))
+  // Camera right   = ( cos(yaw), 0, -sin(yaw))
+  const fwdComp = -dx * Math.sin(cam.yaw) - dz * Math.cos(cam.yaw);
+  const rgtComp =  dx * Math.cos(cam.yaw) - dz * Math.sin(cam.yaw);
+  const screenAngle = Math.atan2(rgtComp, fwdComp);
+
+  ui.compassArrow.style.transform = `rotate(${screenAngle}rad)`;
+
+  // Show compass when the bear is anywhere nearby
+  const visible = gameState === 'playing' && dist < 60;
+  ui.compass.classList.toggle('on', visible);
+}
+
+/* =====================================================================
    HUD UPDATE
    ===================================================================== */
 let hudAccum = 0;
@@ -1778,18 +1689,17 @@ function updateHUD(dt){
   if (hudAccum < 0.05) return;
   hudAccum = 0;
 
-  /* detection */
   const d = hunterData.detect;
   ui.detectFill.style.width = (d * 100).toFixed(1) + '%';
 
-  let color, label;
+  let label, color;
   if (d < 0.02)      { color = '#8ef0a8'; label = 'HIDDEN'; }
   else if (d < 0.35) { color = '#8ef0a8'; label = 'UNAWARE'; }
   else if (d < 0.7)  { color = '#ffcc55'; label = 'SUSPICIOUS'; }
-  else if (d < 1.0)  { color = '#ff8a3a'; label = 'ALERTED'; }
-  else               { color = '#ff4a3a'; label = 'HUNTING YOU'; }
+  else if (d < 1.0)  { color = '#ff8a3a'; label = 'CAUGHT THE SCENT'; }
+  else               { color = '#ff4a3a'; label = 'ON YOUR TRAIL'; }
 
-  if (hunterData.state === 'chase'){ color = '#ff4a3a'; label = 'HUNTING YOU'; }
+  if (hunterData.state === 'chase'){ color = '#ff4a3a'; label = 'ON YOUR TRAIL'; }
   else if (hunterData.state === 'search'){ color = '#ff8a3a'; label = 'SEARCHING'; }
 
   ui.detectFill.style.background = color;
@@ -1798,15 +1708,12 @@ function updateHUD(dt){
   ui.detectState.style.color = color;
   ui.detectWrap.classList.toggle('on', d > 0.02 || hunterData.state !== 'patrol');
 
-  /* status */
   ui.hpFill.style.width = clamp(player.health, 0, 100) + '%';
   ui.stFill.style.width = clamp(player.stamina, 0, 100) + '%';
 
-  /* concealed */
   const concealed = player.inBush && player.crouchT > 0.45;
   ui.hiddenTag.classList.toggle('on', concealed);
 
-  /* objective distance */
   const distToExit = Math.hypot(player.pos.x - EXIT.x, player.pos.z - EXIT.z);
   ui.objSub.textContent = 'GATE — ' + Math.round(distToExit) + ' M';
 }
@@ -1816,7 +1723,6 @@ function updateHUD(dt){
    ===================================================================== */
 function animate(){
   requestAnimationFrame(animate);
-
   const dt = Math.min(clock.getDelta(), 0.05);
   const t  = clock.elapsedTime;
 
@@ -1826,27 +1732,26 @@ function animate(){
     updateProjectiles(dt);
     updateCamera(dt);
     updateHUD(dt);
+    updateCompass();
   } else if (gameState === 'menu'){
     updateMenuCamera(t);
     cow.update(dt, 0, 0, t);
+    ui.compass.classList.remove('on');
   } else {
-    // won / lost — keep camera alive
     updateProjectiles(dt);
     updateCamera(dt);
     hunter.update(dt, 0, t);
+    updateCompass();
   }
 
   updateSun();
-
   if (grassMatRef && grassMatRef.userData.shader){
     grassMatRef.userData.shader.uniforms.uTime.value = t;
   }
-
   if (exitGlow){
     exitGlow.material.opacity = 0.16 + Math.sin(t * 1.8) * 0.07;
     exitBeam.material.opacity = 0.07 + Math.sin(t * 1.3) * 0.035;
   }
-
   composer.render();
 }
 
