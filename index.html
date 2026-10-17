@@ -57,8 +57,6 @@
   #detectBar{height:5px;background:rgba(255,255,255,.09);border-radius:3px;overflow:hidden;}
   #detectFill{height:100%;width:0%;background:var(--warn);border-radius:3px;
     transition:width .06s linear, background .2s;box-shadow:0 0 12px currentColor;}
-
-  /* ---- Compass ---- */
   #compass{
     position:absolute;
     top:84px;left:50%;transform:translateX(-50%);
@@ -81,7 +79,6 @@
     transform: rotate(0rad);
     transition: transform .08s linear;
   }
-
   #status{bottom:24px;left:22px;width:250px;}
   .statRow{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
   .statRow:last-child{margin-bottom:0;}
@@ -102,6 +99,179 @@
     color:#93a89b;line-height:1.85;text-align:right;text-transform:uppercase;
   }
   #controls b{color:#d8ecdc;font-weight:600;}
+
+  /* ---- FPS + Settings button ---- */
+  #fpsDisplay{
+    position:fixed;
+    top:26px;right:76px;
+    font-size:10px;letter-spacing:.15em;color:#8ef0a8;
+    font-family:"Consolas","Courier New",monospace;
+    text-transform:uppercase;
+    pointer-events:none;z-index:15;
+    padding:6px 10px;
+    background:rgba(8,14,12,.55);
+    border:1px solid rgba(142,240,168,.2);
+    border-radius:3px;
+    display:none;
+  }
+  #settingsBtn{
+    position:fixed;
+    top:22px;right:22px;
+    width:40px;height:40px;
+    background:rgba(8,14,12,.72);
+    border:1px solid rgba(142,240,168,.32);
+    border-radius:50%;
+    color:#8ef0a8;
+    font-size:20px;line-height:1;
+    cursor:pointer;z-index:35;
+    backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .25s cubic-bezier(.4,0,.2,1), background .2s, border-color .2s, box-shadow .2s;
+    padding:0;
+  }
+  #settingsBtn:hover{
+    transform:rotate(60deg);
+    background:rgba(8,14,12,.92);
+    border-color:#8ef0a8;
+    box-shadow:0 0 20px rgba(142,240,168,.4);
+  }
+
+  /* ---- Settings overlay ---- */
+  #settingsOverlay{
+    position:fixed;inset:0;z-index:40;
+    background:rgba(2,4,3,.82);
+    backdrop-filter:blur(8px);
+    display:flex;align-items:center;justify-content:center;
+    pointer-events:auto;
+    transition:opacity .25s;
+  }
+  #settingsOverlay.hidden{opacity:0;pointer-events:none;}
+  #settingsPanel{
+    width:min(460px, 92vw);
+    max-height:88vh;
+    overflow-y:auto;
+    background:linear-gradient(180deg, rgba(14,20,16,.97), rgba(8,12,10,.97));
+    border:1px solid rgba(142,240,168,.28);
+    border-radius:4px;
+    box-shadow:0 24px 80px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.05);
+    padding:22px 24px 18px;
+  }
+  #settingsPanel::-webkit-scrollbar{width:6px;}
+  #settingsPanel::-webkit-scrollbar-thumb{background:rgba(142,240,168,.3);border-radius:3px;}
+  #settingsHeader{
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:11px;letter-spacing:.32em;text-transform:uppercase;
+    color:#8ef0a8;padding-bottom:14px;margin-bottom:18px;
+    border-bottom:1px solid rgba(142,240,168,.18);
+  }
+  #settingsClose{
+    background:none;border:none;color:#7fa88c;font-size:16px;cursor:pointer;
+    padding:2px 8px;transition:color .15s;
+  }
+  #settingsClose:hover{color:#ff5a4a;}
+
+  .settingGroup{margin-bottom:16px;}
+  .settingGroupTitle{
+    font-size:9px;letter-spacing:.28em;color:#7fa88c;
+    text-transform:uppercase;margin-bottom:9px;
+  }
+  .presetRow{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px;
+  }
+  .presetBtn{
+    padding:9px 4px;font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(142,240,168,.18);
+    color:#9db4a6;cursor:pointer;border-radius:2px;
+    transition:all .15s;
+    font-weight:600;
+  }
+  .presetBtn:hover{background:rgba(142,240,168,.1);color:#c8ecd2;border-color:rgba(142,240,168,.4);}
+  .presetBtn.active{
+    background:linear-gradient(180deg, rgba(142,240,168,.28), rgba(142,240,168,.14));
+    border-color:#8ef0a8;color:#eafff0;
+    box-shadow:0 0 16px rgba(142,240,168,.35);
+  }
+  .settingRow{
+    display:flex;align-items:center;gap:12px;
+    padding:9px 0;
+    border-bottom:1px solid rgba(255,255,255,.04);
+    font-size:11px;letter-spacing:.1em;color:#b6c9bb;
+  }
+  .settingRow:last-child{border-bottom:none;}
+  .settingRow > label{
+    flex:1;text-transform:uppercase;letter-spacing:.14em;font-size:10px;
+  }
+  .settingValue{
+    font-family:"Consolas","Courier New",monospace;
+    font-size:10.5px;color:#8ef0a8;min-width:44px;text-align:right;
+  }
+  .settingRow input[type="range"]{
+    -webkit-appearance:none;appearance:none;
+    width:130px;height:3px;
+    background:rgba(255,255,255,.12);
+    border-radius:2px;outline:none;cursor:pointer;
+  }
+  .settingRow input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;
+    width:13px;height:13px;border-radius:50%;
+    background:#8ef0a8;cursor:pointer;
+    box-shadow:0 0 10px rgba(142,240,168,.7);
+    transition:transform .1s;
+  }
+  .settingRow input[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.2);}
+  .settingRow input[type="range"]::-moz-range-thumb{
+    width:13px;height:13px;border-radius:50%;
+    background:#8ef0a8;cursor:pointer;border:none;
+    box-shadow:0 0 10px rgba(142,240,168,.7);
+  }
+  .settingRow select{
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(142,240,168,.22);
+    color:#d8ecdc;
+    padding:5px 8px;border-radius:2px;
+    font-size:10.5px;font-family:inherit;
+    letter-spacing:.08em;cursor:pointer;
+    outline:none;
+  }
+  .settingRow select:focus{border-color:#8ef0a8;}
+  .switchWrap{
+    position:relative;width:34px;height:18px;flex-shrink:0;
+  }
+  .switchWrap input{opacity:0;width:0;height:0;}
+  .switchTrack{
+    position:absolute;inset:0;
+    background:rgba(255,255,255,.1);
+    border-radius:9px;transition:background .2s;
+    cursor:pointer;
+  }
+  .switchTrack::before{
+    content:"";
+    position:absolute;width:14px;height:14px;border-radius:50%;
+    background:#93a89b;left:2px;top:2px;
+    transition:transform .22s cubic-bezier(.4,0,.2,1), background .2s;
+  }
+  .switchWrap input:checked + .switchTrack{background:rgba(142,240,168,.35);}
+  .switchWrap input:checked + .switchTrack::before{
+    transform:translateX(16px);
+    background:#8ef0a8;
+    box-shadow:0 0 8px rgba(142,240,168,.8);
+  }
+  #settingsFooter{
+    margin-top:18px;padding-top:16px;
+    border-top:1px solid rgba(142,240,168,.14);
+    display:flex;justify-content:flex-end;
+  }
+  #settingsReset{
+    padding:9px 20px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+    background:transparent;
+    border:1px solid rgba(255,138,58,.4);
+    color:#ff8a3a;cursor:pointer;border-radius:2px;
+    transition:all .15s;
+  }
+  #settingsReset:hover{background:rgba(255,138,58,.12);border-color:#ff8a3a;}
+
+  /* ---- Overlay / Menu ---- */
   #overlay{
     position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;
     align-items:center;justify-content:center;text-align:center;
@@ -180,6 +350,98 @@
   </div>
 </div>
 
+<div id="fpsDisplay">60 FPS</div>
+<button id="settingsBtn" title="Graphics Settings">⚙</button>
+
+<!-- ============ SETTINGS OVERLAY ============ -->
+<div id="settingsOverlay" class="hidden">
+  <div id="settingsPanel">
+    <div id="settingsHeader">
+      <span>Graphics Settings</span>
+      <button id="settingsClose" aria-label="Close">✕</button>
+    </div>
+
+    <div class="settingGroupTitle">Quality Preset</div>
+    <div class="presetRow">
+      <button class="presetBtn" data-preset="low">Low</button>
+      <button class="presetBtn" data-preset="medium">Medium</button>
+      <button class="presetBtn active" data-preset="high">High</button>
+      <button class="presetBtn" data-preset="ultra">Ultra</button>
+    </div>
+
+    <div class="settingRow">
+      <label>Resolution Scale</label>
+      <input type="range" id="sResolution" min="40" max="100" step="5" value="100">
+      <span class="settingValue" id="vResolution">100%</span>
+    </div>
+
+    <div class="settingRow">
+      <label>Shadows</label>
+      <div class="switchWrap">
+        <input type="checkbox" id="sShadows" checked>
+        <span class="switchTrack"></span>
+      </div>
+    </div>
+
+    <div class="settingRow" id="rowShadowSize">
+      <label>Shadow Quality</label>
+      <select id="sShadowSize">
+        <option value="512">Low</option>
+        <option value="1024">Medium</option>
+        <option value="2048" selected>High</option>
+      </select>
+    </div>
+
+    <div class="settingRow">
+      <label>Bloom</label>
+      <div class="switchWrap">
+        <input type="checkbox" id="sBloom" checked>
+        <span class="switchTrack"></span>
+      </div>
+    </div>
+
+    <div class="settingRow" id="rowBloomStrength">
+      <label>Bloom Strength</label>
+      <input type="range" id="sBloomStrength" min="0" max="100" step="5" value="42">
+      <span class="settingValue" id="vBloomStrength">0.42</span>
+    </div>
+
+    <div class="settingRow">
+      <label>Grass Detail</label>
+      <div class="switchWrap">
+        <input type="checkbox" id="sGrass" checked>
+        <span class="switchTrack"></span>
+      </div>
+    </div>
+
+    <div class="settingRow">
+      <label>Atmospheric Fog</label>
+      <div class="switchWrap">
+        <input type="checkbox" id="sFog" checked>
+        <span class="switchTrack"></span>
+      </div>
+    </div>
+
+    <div class="settingRow">
+      <label>Exposure</label>
+      <input type="range" id="sExposure" min="50" max="150" step="5" value="105">
+      <span class="settingValue" id="vExposure">1.05</span>
+    </div>
+
+    <div class="settingRow">
+      <label>Show FPS</label>
+      <div class="switchWrap">
+        <input type="checkbox" id="sFps">
+        <span class="switchTrack"></span>
+      </div>
+    </div>
+
+    <div id="settingsFooter">
+      <button id="settingsReset">Reset to Default</button>
+    </div>
+  </div>
+</div>
+
 <div id="hint">CLICK TO CAPTURE MOUSE</div>
 
 <div id="overlay">
@@ -237,6 +499,7 @@ document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x9db4c8, 0.0135);
+const fogRef = scene.fog;
 
 const camera = new THREE.PerspectiveCamera(58, window.innerWidth/window.innerHeight, 0.1, 900);
 
@@ -362,6 +625,7 @@ function makeGroundTexture(){
    GRASS
    ===================================================================== */
 let grassMatRef = null;
+let grassMesh = null;   // <-- stored for settings toggle
 function makeBladeTexture(){
   const c = document.createElement('canvas');
   c.width = 64; c.height = 128;
@@ -426,6 +690,7 @@ function makeBladeTexture(){
   mesh.instanceMatrix.needsUpdate = true;
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
   scene.add(mesh);
+  grassMesh = mesh;   // <-- store reference
 }
 
 /* =====================================================================
@@ -845,7 +1110,6 @@ function createCow(){
     head.add(horn);
   }
 
-  // LEGS — two-segment tapered with haunch and hoof cap
   const legs = [];
   const legDefs = [
     [-0.40,  0.70], [ 0.40,  0.70],
@@ -862,25 +1126,20 @@ function createCow(){
     const g = new THREE.Group();
     g.position.set(lx, LEG_LEN, lz);
     root.add(g);
-
     const haunch = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 10), hideMat);
     haunch.position.y = 0.02;
     haunch.scale.set(1.05, 0.75, 1.05);
     haunch.castShadow = true; haunch.receiveShadow = true;
     g.add(haunch);
-
     const upper = new THREE.Mesh(upperLegGeo, hideMat);
     upper.castShadow = true; upper.receiveShadow = true;
     g.add(upper);
-
     const lower = new THREE.Mesh(lowerLegGeo, hideMat);
     lower.castShadow = true; lower.receiveShadow = true;
     g.add(lower);
-
     const hoof = new THREE.Mesh(hoofCapGeo, hoofMat);
     hoof.castShadow = true; hoof.receiveShadow = true;
     g.add(hoof);
-
     legs.push(g);
   }
 
@@ -1118,29 +1377,27 @@ scene.add(cow.group);
 const hunter = createBear();
 scene.add(hunter.group);
 
-// Waypoints now spread across the WHOLE map so the bear crosses
-// the player's route. The bear also starts near the player spawn.
 const hunterData = {
   state: 'patrol',
   detect: 0,
   lastSeen: -99,
   lastKnown: new THREE.Vector3(),
   waypoints: [
-    new THREE.Vector3(-35, 0,  35),   // near player spawn
-    new THREE.Vector3(  0, 0,  35),   // across the top
-    new THREE.Vector3( 35, 0,  35),   // top-right
-    new THREE.Vector3( 35, 0,   0),   // right
-    new THREE.Vector3( 35, 0, -35),   // bottom-right (near exit)
-    new THREE.Vector3(  0, 0, -35),   // across the bottom
-    new THREE.Vector3(-35, 0, -35),   // bottom-left
-    new THREE.Vector3(-35, 0,   0),   // left
-    new THREE.Vector3(-35, 0,  35),   // back to start
-    new THREE.Vector3(  0, 0,   0),   // cut through center
+    new THREE.Vector3(-35, 0,  35),
+    new THREE.Vector3(  0, 0,  35),
+    new THREE.Vector3( 35, 0,  35),
+    new THREE.Vector3( 35, 0,   0),
+    new THREE.Vector3( 35, 0, -35),
+    new THREE.Vector3(  0, 0, -35),
+    new THREE.Vector3(-35, 0, -35),
+    new THREE.Vector3(-35, 0,   0),
+    new THREE.Vector3(-35, 0,  35),
+    new THREE.Vector3(  0, 0,   0),
   ],
   wpIndex: 0,
   searchTimer: 0,
   shootCooldown: 0,
-  viewRange: 40,       // a bit more reach
+  viewRange: 40,
   fov: 82,
   speed: 2.3
 };
@@ -1185,8 +1442,6 @@ function segmentCircle(ax, az, bx, bz, cx, cz, r){
   if (t1 < 0 && t2 > 1) return true;
   return false;
 }
-
-// 3D segment vs sphere — used for bullet tunneling fix
 function segmentSphere(p0, p1, center, radius){
   const dx = p1.x - p0.x, dy = p1.y - p0.y, dz = p1.z - p0.z;
   const fx = p0.x - center.x, fy = p0.y - center.y, fz = p0.z - center.z;
@@ -1204,7 +1459,6 @@ function segmentSphere(p0, p1, center, radius){
   if (t1 < 0 && t2 > 1) return true;
   return false;
 }
-
 function hasLOS(ax, az, bx, bz){
   const minX = Math.min(ax,bx) - 2, maxX = Math.max(ax,bx) + 2;
   const minZ = Math.min(az,bz) - 2, maxZ = Math.max(az,bz) + 2;
@@ -1267,13 +1521,14 @@ window.addEventListener('keydown', e => {
 window.addEventListener('keyup', e => { keys[e.code] = false; });
 
 renderer.domElement.addEventListener('click', () => {
-  if (gameState === 'playing' && !document.pointerLockElement){
+  if (gameState === 'playing' && !document.pointerLockElement && !settingsOpen){
     renderer.domElement.requestPointerLock();
   }
 });
 document.addEventListener('pointerlockchange', () => {
   const locked = document.pointerLockElement === renderer.domElement;
-  document.getElementById('hint').classList.toggle('on', gameState === 'playing' && !locked);
+  document.getElementById('hint').classList.toggle('on',
+    gameState === 'playing' && !locked && !settingsOpen);
 });
 document.addEventListener('mousemove', e => {
   if (document.pointerLockElement !== renderer.domElement) return;
@@ -1285,6 +1540,8 @@ document.addEventListener('mousemove', e => {
    GAME STATE / UI
    ===================================================================== */
 let gameState = 'menu';
+let paused = false;
+let settingsOpen = false;
 const clock = new THREE.Clock();
 
 const ui = {
@@ -1300,7 +1557,9 @@ const ui = {
   damage: document.getElementById('damage'),
   hint: document.getElementById('hint'),
   compass: document.getElementById('compass'),
-  compassArrow: document.getElementById('compassArrow')
+  compassArrow: document.getElementById('compassArrow'),
+  fpsDisplay: document.getElementById('fpsDisplay'),
+  settingsOverlay: document.getElementById('settingsOverlay')
 };
 
 function flashDamage(){
@@ -1360,7 +1619,6 @@ document.getElementById('startBtn').addEventListener('click', restart);
    ===================================================================== */
 function updatePlayer(dt, t){
   if (!player.alive) return;
-
   const wantCrouch = !!(keys['ControlLeft'] || keys['ControlRight'] || keys['KeyC']);
   player.crouching = wantCrouch;
   player.crouchT = THREE.MathUtils.damp(player.crouchT, wantCrouch ? 1 : 0, 9, dt);
@@ -1423,7 +1681,6 @@ function updateHunter(dt, t){
   const pz = player.pos.z;
   const dist = Math.hypot(px - hx, pz - hz);
 
-  /* ---- vision ---- */
   let sees = false;
   if (player.alive && dist < h.viewRange){
     const facing = new THREE.Vector3(Math.sin(hunter.group.rotation.y), 0, Math.cos(hunter.group.rotation.y));
@@ -1438,7 +1695,6 @@ function updateHunter(dt, t){
     }
   }
 
-  /* ---- detection meter ---- */
   if (sees){
     let mult = 1.0;
     if (player.inBush) mult *= (player.crouchT > 0.5 ? 0.13 : 0.48);
@@ -1451,7 +1707,6 @@ function updateHunter(dt, t){
     h.detect = Math.max(0, h.detect - 0.55 * dt);
   }
 
-  /* ---- state machine ---- */
   if (h.detect >= 1){
     if (h.state !== 'chase') h.state = 'chase';
   } else if (h.state === 'chase'){
@@ -1465,7 +1720,6 @@ function updateHunter(dt, t){
     if (h.searchTimer <= 0) h.state = 'patrol';
   }
 
-  /* ---- behaviour ---- */
   let desired = new THREE.Vector3();
   let moveSpeed = 0;
   let faceTarget = null;
@@ -1477,7 +1731,7 @@ function updateHunter(dt, t){
       h.wpIndex = (h.wpIndex + 1) % h.waypoints.length;
     } else {
       desired.normalize();
-      moveSpeed = 3.2;                       // <-- faster patrol
+      moveSpeed = 3.2;
     }
     if (!faceTarget) faceTarget = Math.atan2(desired.x, desired.z);
   }
@@ -1548,21 +1802,18 @@ function shootAtPlayer(){
 }
 
 /* =====================================================================
-   PROJECTILE UPDATE — segment-sphere sweep to prevent tunneling
+   PROJECTILE UPDATE
    ===================================================================== */
 function updateProjectiles(dt){
   for (let i = projectiles.length - 1; i >= 0; i--){
     const b = projectiles[i];
     b.life -= dt;
-
     const oldPos = b.mesh.position.clone();
     const step = b.speed * dt;
     b.mesh.position.addScaledVector(b.dir, step);
     const newPos = b.mesh.position;
-
     let dead = b.life <= 0;
 
-    // hit player (segment test — cannot tunnel through)
     if (!dead && player.alive){
       const center = new THREE.Vector3(
         player.pos.x,
@@ -1574,29 +1825,16 @@ function updateProjectiles(dt){
         dead = true;
       }
     }
-
-    // hit obstacle
     if (!dead){
       const bx = newPos.x, bz = newPos.z;
       for (let j=0;j<obstacles.length;j++){
         const o = obstacles[j];
         const dx = bx - o.x, dz = bz - o.z;
-        if (dx*dx + dz*dz < o.r*o.r){
-          dead = true;
-          break;
-        }
+        if (dx*dx + dz*dz < o.r*o.r){ dead = true; break; }
       }
     }
-
-    if (!dead && newPos.y < 0.05){
-      newPos.y = 0.05;
-      dead = true;
-    }
-
-    if (dead){
-      scene.remove(b.mesh);
-      projectiles.splice(i, 1);
-    }
+    if (!dead && newPos.y < 0.05){ newPos.y = 0.05; dead = true; }
+    if (dead){ scene.remove(b.mesh); projectiles.splice(i, 1); }
   }
 }
 
@@ -1636,7 +1874,6 @@ function updateCamera(dt){
   camera.position.copy(camPos);
   camera.lookAt(camTarget);
 }
-
 function updateMenuCamera(t){
   const r = 12;
   const a = t * 0.22;
@@ -1659,25 +1896,17 @@ function updateSun(){
 }
 
 /* =====================================================================
-   COMPASS — points toward the bear in screen-relative space
+   COMPASS
    ===================================================================== */
 function updateCompass(){
   const dx = hunter.group.position.x - player.pos.x;
   const dz = hunter.group.position.z - player.pos.z;
   const dist = Math.hypot(dx, dz);
-
-  // Project onto camera's forward/right
-  // Camera forward = (-sin(yaw), 0, -cos(yaw))
-  // Camera right   = ( cos(yaw), 0, -sin(yaw))
   const fwdComp = -dx * Math.sin(cam.yaw) - dz * Math.cos(cam.yaw);
   const rgtComp =  dx * Math.cos(cam.yaw) - dz * Math.sin(cam.yaw);
   const screenAngle = Math.atan2(rgtComp, fwdComp);
-
   ui.compassArrow.style.transform = `rotate(${screenAngle}rad)`;
-
-  // Show compass when the bear is anywhere nearby
-  const visible = gameState === 'playing' && dist < 60;
-  ui.compass.classList.toggle('on', visible);
+  ui.compass.classList.toggle('on', gameState === 'playing' && dist < 60);
 }
 
 /* =====================================================================
@@ -1688,7 +1917,6 @@ function updateHUD(dt){
   hudAccum += dt;
   if (hudAccum < 0.05) return;
   hudAccum = 0;
-
   const d = hunterData.detect;
   ui.detectFill.style.width = (d * 100).toFixed(1) + '%';
 
@@ -1698,7 +1926,6 @@ function updateHUD(dt){
   else if (d < 0.7)  { color = '#ffcc55'; label = 'SUSPICIOUS'; }
   else if (d < 1.0)  { color = '#ff8a3a'; label = 'CAUGHT THE SCENT'; }
   else               { color = '#ff4a3a'; label = 'ON YOUR TRAIL'; }
-
   if (hunterData.state === 'chase'){ color = '#ff4a3a'; label = 'ON YOUR TRAIL'; }
   else if (hunterData.state === 'search'){ color = '#ff8a3a'; label = 'SEARCHING'; }
 
@@ -1719,6 +1946,242 @@ function updateHUD(dt){
 }
 
 /* =====================================================================
+   SETTINGS SYSTEM
+   ===================================================================== */
+const DEFAULT_SETTINGS = {
+  preset: 'high',
+  resolutionScale: 1.0,
+  shadows: true,
+  shadowSize: 2048,
+  bloom: true,
+  bloomStrength: 0.42,
+  grass: true,
+  fog: true,
+  fogDensity: 0.0135,
+  exposure: 1.05,
+  showFps: false
+};
+
+const PRESETS = {
+  low: {
+    resolutionScale: 0.60, shadows: false, shadowSize: 512,
+    bloom: false, bloomStrength: 0.30,
+    grass: false, fog: false, fogDensity: 0.008, exposure: 1.00
+  },
+  medium: {
+    resolutionScale: 0.80, shadows: true, shadowSize: 1024,
+    bloom: false, bloomStrength: 0.35,
+    grass: true, fog: true, fogDensity: 0.010, exposure: 1.02
+  },
+  high: {
+    resolutionScale: 1.00, shadows: true, shadowSize: 2048,
+    bloom: true, bloomStrength: 0.42,
+    grass: true, fog: true, fogDensity: 0.0135, exposure: 1.05
+  },
+  ultra: {
+    resolutionScale: 1.00, shadows: true, shadowSize: 2048,
+    bloom: true, bloomStrength: 0.65,
+    grass: true, fog: true, fogDensity: 0.0135, exposure: 1.10
+  }
+};
+
+let settings = Object.assign({}, DEFAULT_SETTINGS);
+
+// Track internal state so we don't rebuild the shadow map on every UI change
+let currentShadowSize = 2048;
+let currentShadowsOn = true;
+
+function loadSettings(){
+  try {
+    const saved = localStorage.getItem('dulesim_settings');
+    if (saved){
+      const parsed = JSON.parse(saved);
+      settings = Object.assign({}, DEFAULT_SETTINGS, parsed);
+    }
+  } catch (e) { /* ignore */ }
+}
+function saveSettings(){
+  try { localStorage.setItem('dulesim_settings', JSON.stringify(settings)); } catch (e) {}
+}
+
+function applyShadows(enabled, size){
+  renderer.shadowMap.enabled = enabled;
+  sun.castShadow = enabled;
+  if (enabled && (!currentShadowsOn || currentShadowSize !== size)){
+    if (sun.shadow.map){
+      sun.shadow.map.dispose();
+      sun.shadow.map = null;
+    }
+    sun.shadow.mapSize.set(size, size);
+    currentShadowSize = size;
+  }
+  currentShadowsOn = enabled;
+}
+
+function applySettings(){
+  const s = settings;
+  const basePR = Math.min(window.devicePixelRatio || 1, 2);
+  const pr = basePR * s.resolutionScale;
+  renderer.setPixelRatio(pr);
+  composer.setPixelRatio(pr);
+
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h);
+  composer.setSize(w, h);
+
+  applyShadows(s.shadows, s.shadowSize);
+
+  bloom.enabled = s.bloom;
+  bloom.strength = s.bloomStrength;
+
+  if (grassMesh) grassMesh.visible = s.grass;
+
+  if (s.fog){
+    scene.fog = fogRef;
+    fogRef.density = s.fogDensity;
+  } else {
+    scene.fog = null;
+  }
+
+  renderer.toneMappingExposure = s.exposure;
+
+  ui.fpsDisplay.style.display = s.showFps ? 'block' : 'none';
+
+  // Disable shadow-size row dim when shadows off
+  const rowSS = document.getElementById('rowShadowSize');
+  if (rowSS) rowSS.style.opacity = s.shadows ? '1' : '0.4';
+  const rowBS = document.getElementById('rowBloomStrength');
+  if (rowBS) rowBS.style.opacity = s.bloom ? '1' : '0.4';
+}
+
+function syncSettingsUI(){
+  document.getElementById('sResolution').value = Math.round(settings.resolutionScale * 100);
+  document.getElementById('vResolution').textContent = Math.round(settings.resolutionScale * 100) + '%';
+  document.getElementById('sShadows').checked = settings.shadows;
+  document.getElementById('sShadowSize').value = settings.shadowSize;
+  document.getElementById('sBloom').checked = settings.bloom;
+  document.getElementById('sBloomStrength').value = Math.round(settings.bloomStrength * 100);
+  document.getElementById('vBloomStrength').textContent = settings.bloomStrength.toFixed(2);
+  document.getElementById('sGrass').checked = settings.grass;
+  document.getElementById('sFog').checked = settings.fog;
+  document.getElementById('sExposure').value = Math.round(settings.exposure * 100);
+  document.getElementById('vExposure').textContent = settings.exposure.toFixed(2);
+  document.getElementById('sFps').checked = settings.showFps;
+  document.querySelectorAll('.presetBtn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.preset === settings.preset);
+  });
+}
+
+function applyPreset(name){
+  const p = PRESETS[name];
+  if (!p) return;
+  Object.assign(settings, p, { preset: name });
+  syncSettingsUI();
+  applySettings();
+  saveSettings();
+}
+
+function markCustom(){
+  settings.preset = 'custom';
+  document.querySelectorAll('.presetBtn').forEach(btn => btn.classList.remove('active'));
+}
+
+function openSettings(){
+  if (gameState === 'playing') paused = true;
+  settingsOpen = true;
+  ui.settingsOverlay.classList.remove('hidden');
+  try { document.exitPointerLock(); } catch (e) {}
+}
+function closeSettings(){
+  settingsOpen = false;
+  ui.settingsOverlay.classList.add('hidden');
+  if (gameState === 'playing'){
+    paused = false;
+    try {
+      const p = renderer.domElement.requestPointerLock();
+      if (p && p.catch) p.catch(() => {});
+    } catch (e) {}
+  }
+}
+
+// Wire up UI
+document.getElementById('settingsBtn').addEventListener('click', openSettings);
+document.getElementById('settingsClose').addEventListener('click', closeSettings);
+
+document.querySelectorAll('.presetBtn').forEach(btn => {
+  btn.addEventListener('click', () => applyPreset(btn.dataset.preset));
+});
+
+document.getElementById('settingsReset').addEventListener('click', () => {
+  settings = Object.assign({}, DEFAULT_SETTINGS);
+  syncSettingsUI();
+  applySettings();
+  saveSettings();
+});
+
+document.getElementById('sResolution').addEventListener('input', e => {
+  settings.resolutionScale = parseInt(e.target.value) / 100;
+  document.getElementById('vResolution').textContent = e.target.value + '%';
+  markCustom(); applySettings(); saveSettings();
+});
+document.getElementById('sShadows').addEventListener('change', e => {
+  settings.shadows = e.target.checked; markCustom(); applySettings(); saveSettings();
+});
+document.getElementById('sShadowSize').addEventListener('change', e => {
+  settings.shadowSize = parseInt(e.target.value); markCustom(); applySettings(); saveSettings();
+});
+document.getElementById('sBloom').addEventListener('change', e => {
+  settings.bloom = e.target.checked; markCustom(); applySettings(); saveSettings();
+});
+document.getElementById('sBloomStrength').addEventListener('input', e => {
+  settings.bloomStrength = parseInt(e.target.value) / 100;
+  document.getElementById('vBloomStrength').textContent = settings.bloomStrength.toFixed(2);
+  markCustom(); applySettings(); saveSettings();
+});
+document.getElementById('sGrass').addEventListener('change', e => {
+  settings.grass = e.target.checked; markCustom(); applySettings(); saveSettings();
+});
+document.getElementById('sFog').addEventListener('change', e => {
+  settings.fog = e.target.checked; markCustom(); applySettings(); saveSettings();
+});
+document.getElementById('sExposure').addEventListener('input', e => {
+  settings.exposure = parseInt(e.target.value) / 100;
+  document.getElementById('vExposure').textContent = settings.exposure.toFixed(2);
+  markCustom(); applySettings(); saveSettings();
+});
+document.getElementById('sFps').addEventListener('change', e => {
+  settings.showFps = e.target.checked; markCustom(); applySettings(); saveSettings();
+});
+
+// Load and apply saved settings
+loadSettings();
+syncSettingsUI();
+applySettings();
+
+// ESC closes settings if open
+window.addEventListener('keydown', e => {
+  if (e.code === 'Escape' && settingsOpen) closeSettings();
+});
+
+/* =====================================================================
+   FPS COUNTER
+   ===================================================================== */
+let fpsFrames = 0;
+let fpsAccum = 0;
+function updateFPS(dt){
+  fpsFrames++;
+  fpsAccum += dt;
+  if (fpsAccum >= 0.5){
+    if (settings.showFps){
+      const fps = Math.round(fpsFrames / fpsAccum);
+      ui.fpsDisplay.textContent = fps + ' FPS';
+    }
+    fpsFrames = 0;
+    fpsAccum = 0;
+  }
+}
+
+/* =====================================================================
    MAIN LOOP
    ===================================================================== */
 function animate(){
@@ -1726,7 +2189,9 @@ function animate(){
   const dt = Math.min(clock.getDelta(), 0.05);
   const t  = clock.elapsedTime;
 
-  if (gameState === 'playing'){
+  updateFPS(dt);
+
+  if (gameState === 'playing' && !paused){
     updatePlayer(dt, t);
     updateHunter(dt, t);
     updateProjectiles(dt);
@@ -1738,6 +2203,7 @@ function animate(){
     cow.update(dt, 0, 0, t);
     ui.compass.classList.remove('on');
   } else {
+    // won / lost / paused
     updateProjectiles(dt);
     updateCamera(dt);
     hunter.update(dt, 0, t);
@@ -1764,7 +2230,6 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(w, h);
   composer.setSize(w, h);
-  bloom.setSize(w, h);
 });
 
 /* =====================================================================
